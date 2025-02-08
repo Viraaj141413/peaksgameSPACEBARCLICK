@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spacebar Clicker Game</title>
+  <style>
+    body {
+      font-family: 'serif';
+      background-color: #f7f4e3;
+      color: #3c2f2f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 4rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.25rem;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #b29f79;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+      border: 2px solid #3c2f2f;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #c9b38c;
+    }
+    .upgrade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #d3c4a1;
+      padding: 20px;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 2px solid #3c2f2f;
+      cursor: not-allowed;
+      transition: background-color 0.3s ease;
+    }
+    .upgrade.available {
+      background-color: #e4d6b6;
+      cursor: pointer;
+    }
+    .upgrade:hover {
+      background-color: #c9b38c;
+    }
+    .upgrade-info {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="count">0</h1>
+  <p id="per-second">per second: 0</p>
+  <button id="spacebarButton">SPACEBAR</button>
+
+  <div id="upgrades" class="upgrades">
+    <!-- Upgrade items will be injected here -->
+  </div>
+
+  <script>
+    const upgrades = [
+      { name: "Keyboard Chimp", cost: 20, rate: 0.2, owned: 0, description: "A chimp randomly hits the keyboard every 5 seconds." },
+      { name: "Speedy Grandma", cost: 100, rate: 3, owned: 0, description: "A speedy grandma aggressively types at 3x a second!" },
+      { name: "TikTok Pro", cost: 500, rate: 20, owned: 0, description: "A TikTok pro scrolling fast, pressing at 20x a second!" },
+      { name: "Hyper Keyboard", cost: 6000, multiplier: 2, owned: 0, description: "Doubles your own hits!" },
+      { name: "Broken Keyboard", cost: 7000, rate: 75, owned: 0, description: "A broken keyboard that spams spacebar at 75x per second!" },
+      { name: "Alien Gun", cost: 10000, rate: 150, owned: 0, description: "A girl made a gun, but it malfunctioned, striking the keyboard at 150x per second!" }
+    ];
+
+    let count = 0;
+    let multiplier = 1;
+    let clicksPerSecond = 0;
+
+    function updateUI() {
+      document.getElementById("count").innerText = Math.floor(count);
+      document.getElementById("per-second").innerText = `per second: ${Math.floor(clicksPerSecond)}`;
+      updateUpgrades();
+    }
+
+    function handleClick() {
+      count += multiplier;
+      updateUI();
+    }
+
+    function updateUpgrades() {
+      const upgradesContainer = document.getElementById("upgrades");
+      upgradesContainer.innerHTML = ''; // Clear previous upgrades
+
+      upgrades.sort((a, b) => a.cost - b.cost).forEach((upgrade, index) => {
+        const upgradeElement = document.createElement("div");
+        upgradeElement.className = `upgrade ${count >= upgrade.cost ? 'available' : ''}`;
+        upgradeElement.innerHTML = `
+          <div>
+            <span class="upgrade-info">${upgrade.name}</span>
+            <p class="description">${upgrade.description}</p>
+          </div>
+          <div class="cost-info">
+            <span class="text-2xl font-bold">${upgrade.owned}</span>
+            <p class="text-sm">${upgrade.cost} clicks</p>
+          </div>
+        `;
+        upgradeElement.onclick = () => buyUpgrade(index);
+        upgradesContainer.appendChild(upgradeElement);
+      });
+    }
+
+    function buyUpgrade(index) {
+      const upgrade = upgrades[index];
+      if (count >= upgrade.cost) {
+        count -= upgrade.cost;
+        upgrade.owned++;
+        upgrade.cost = Math.floor(upgrade.cost * 1.5);
+        
+        if (upgrade.name === "Hyper Keyboard") {
+          multiplier *= 2;
+        }
+
+        updateUI();
+      }
+    }
+
+    setInterval(() => {
+      let totalRate = upgrades.reduce((sum, upgrade) => sum + upgrade.owned * (upgrade.rate || 0), 0);
+      clicksPerSecond = totalRate;
+      count += totalRate;
+      updateUI();
+    }, 1000);
+
+    document.getElementById("spacebarButton").addEventListener("click", handleClick);
+
+    updateUI();
+  </script>
+</body>
+</html>
