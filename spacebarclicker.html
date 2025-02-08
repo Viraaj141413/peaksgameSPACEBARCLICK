@@ -1,86 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spacebar Clicker</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: white;
-        }
-        .counter {
-            font-size: 48px;
-            margin: 20px 0;
-        }
-        .upgrade {
-            margin: 10px;
-            padding: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #444;
-            border: none;
-            color: white;
-            border-radius: 5px;
-        }
-        .upgrade:disabled {
-            background-color: #777;
-        }
-    </style>
-</head>
-<body>
-    <h1>Spacebar Clicker</h1>
-    <p>Press the spacebar to earn points!</p>
-    <div class="counter" id="counter">0</div>
-    <button class="upgrade" id="multiplier" onclick="buyMultiplier()">Buy Multiplier (Cost: 10)</button>
-    <button class="upgrade" id="autoclick" onclick="buyAutoClick()">Buy Auto Clicker (Cost: 50)</button>
-    <script>
-        let score = 0;
-        let multiplier = 1;
-        let multiplierCost = 10;
-        let autoClickerCost = 50;
-        let autoClickers = 0;
+import { useState, useEffect } from "react";
 
-        document.addEventListener("keydown", (event) => {
-            if (event.code === "Space") {
-                score += multiplier;
-                updateCounter();
-            }
-        });
+export default function SpacebarClicker() {
+  const [count, setCount] = useState(0);
+  const [multiplier, setMultiplier] = useState(1);
+  const [clicksPerSecond, setClicksPerSecond] = useState(0);
+  const [upgrades, setUpgrades] = useState([
+    { name: "Keyboard Chimp", cost: 20, rate: 0.2, owned: 0, description: "A chimp randomly hits the keyboard every 5 seconds." },
+    { name: "Speedy Grandma", cost: 100, rate: 3, owned: 0, description: "A speedy grandma aggressively types at 3x a second!" },
+    { name: "TikTok Pro", cost: 500, rate: 20, owned: 0, description: "A TikTok pro scrolling fast, pressing at 20x a second!" },
+    { name: "Hyper Keyboard", cost: 6000, multiplier: 2, owned: 0, description: "Doubles your own hits!" },
+    { name: "Broken Keyboard", cost: 7000, rate: 75, owned: 0, description: "A broken keyboard that spams spacebar at 75x per second!" },
+    { name: "Alien Gun", cost: 10000, rate: 150, owned: 0, description: "A girl made a gun, but it malfunctioned, striking the keyboard at 150x per second!" }
+  ]);
 
-        function updateCounter() {
-            document.getElementById("counter").innerText = score;
-            document.getElementById("multiplier").disabled = score < multiplierCost;
-            document.getElementById("autoclick").disabled = score < autoClickerCost;
-        }
+  const handleClick = () => setCount(Math.floor(count + multiplier));
 
-        function buyMultiplier() {
-            if (score >= multiplierCost) {
-                score -= multiplierCost;
-                multiplier++;
-                multiplierCost *= 2;
-                document.getElementById("multiplier").innerText = `Buy Multiplier (Cost: ${multiplierCost})`;
-                updateCounter();
-            }
-        }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let totalRate = upgrades.reduce((sum, upgrade) => sum + upgrade.owned * (upgrade.rate || 0), 0);
+      setClicksPerSecond(Math.floor(totalRate));
+      setCount(prevCount => Math.floor(prevCount + totalRate));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [upgrades]);
 
-        function buyAutoClick() {
-            if (score >= autoClickerCost) {
-                score -= autoClickerCost;
-                autoClickers++;
-                autoClickerCost *= 2;
-                document.getElementById("autoclick").innerText = `Buy Auto Clicker (Cost: ${autoClickerCost})`;
-                if (autoClickers === 1) {
-                    setInterval(() => {
-                        score += autoClickers;
-                        updateCounter();
-                    }, 1000);
-                }
-                updateCounter();
-            }
-        }
-    </script>
-</body>
-</html>
+  const buyUpgrade = (index) => {
+    if (count >= upgrades[index].cost) {
+      setCount(Math.floor(count - upgrades[index].cost));
+      const newUpgrades = [...upgrades];
+      newUpgrades[index].owned++;
+      newUpgrades[index].cost = Math.floor(newUpgrades[index].cost * 1.5);
+      
+      if (newUpgrades[index].name === "Hyper Keyboard") {
+        setMultiplier(multiplier * 2);
+      }
+      
+      setUpgrades(newUpgrades);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-10 bg-[#f7f4e3] min-h-screen w-full text-[#3c2f2f] font-serif">
+      <h1 className="text-7xl font-bold mb-2">{Math.floor(count)}</h1>
+      <p className="text-xl mb-6">per second: {Math.floor(clicksPerSecond)}</p>
+      <button 
+        onClick={handleClick} 
+        className="bg-[#b29f79] px-12 py-6 rounded-lg text-2xl font-bold shadow-lg border-2 border-[#3c2f2f]"
+      >
+        SPACEBAR
+      </button>
+      <div className="mt-10 w-full max-w-3xl space-y-4">
+        {upgrades.sort((a, b) => a.cost - b.cost).map((upgrade, index) => (
+          <div 
+            key={index} 
+            className={`w-full p-5 rounded-lg shadow-lg border-2 border-[#3c2f2f] flex justify-between items-center text-lg transition-all ${count >= upgrade.cost ? 'bg-[#e4d6b6] hover:bg-[#c9b38c] cursor-pointer' : 'bg-[#d3c4a1] cursor-not-allowed'}`}
+            onClick={() => buyUpgrade(index)}
+          >
+            <div>
+              <span className="font-bold">{upgrade.name}</span>
+              <p className="text-sm">{upgrade.description}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-bold">{upgrade.owned}</span>
+              <p className="text-sm">{upgrade.cost} clicks</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
