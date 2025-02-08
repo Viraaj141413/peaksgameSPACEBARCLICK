@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacebar Clicker</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: white;
+        }
+        .counter {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        .upgrade {
+            margin: 10px;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #444;
+            border: none;
+            color: white;
+            border-radius: 5px;
+        }
+        .upgrade:disabled {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spacebar Clicker</h1>
+    <p>Press the spacebar to earn points!</p>
+    <div class="counter" id="counter">0</div>
+    <button class="upgrade" id="multiplier" onclick="buyMultiplier()">Buy Multiplier (Cost: 10)</button>
+    <button class="upgrade" id="autoclick" onclick="buyAutoClick()">Buy Auto Clicker (Cost: 50)</button>
+    <script>
+        let score = 0;
+        let multiplier = 1;
+        let multiplierCost = 10;
+        let autoClickerCost = 50;
+        let autoClickers = 0;
+
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                score += multiplier;
+                updateCounter();
+            }
+        });
+
+        function updateCounter() {
+            document.getElementById("counter").innerText = score;
+            document.getElementById("multiplier").disabled = score < multiplierCost;
+            document.getElementById("autoclick").disabled = score < autoClickerCost;
+        }
+
+        function buyMultiplier() {
+            if (score >= multiplierCost) {
+                score -= multiplierCost;
+                multiplier++;
+                multiplierCost *= 2;
+                document.getElementById("multiplier").innerText = `Buy Multiplier (Cost: ${multiplierCost})`;
+                updateCounter();
+            }
+        }
+
+        function buyAutoClick() {
+            if (score >= autoClickerCost) {
+                score -= autoClickerCost;
+                autoClickers++;
+                autoClickerCost *= 2;
+                document.getElementById("autoclick").innerText = `Buy Auto Clicker (Cost: ${autoClickerCost})`;
+                if (autoClickers === 1) {
+                    setInterval(() => {
+                        score += autoClickers;
+                        updateCounter();
+                    }, 1000);
+                }
+                updateCounter();
+            }
+        }
+    </script>
+</body>
+</html>
