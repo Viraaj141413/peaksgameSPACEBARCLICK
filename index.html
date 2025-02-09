@@ -15,6 +15,7 @@
       justify-content: center;
       height: 100vh;
       padding: 10px;
+      overflow: hidden;
     }
     h1 {
       font-size: 4rem;
@@ -52,16 +53,25 @@
       border: 2px solid #3c2f2f;
       cursor: not-allowed;
       transition: background-color 0.3s ease;
+      opacity: 0.6;
     }
     .upgrade.available {
       background-color: #e4d6b6;
       cursor: pointer;
+      opacity: 1;
     }
     .upgrade:hover {
       background-color: #c9b38c;
     }
     .upgrade-info {
       font-weight: bold;
+    }
+    #upgrades {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-height: 60vh;
+      overflow-y: auto;
     }
   </style>
 </head>
@@ -81,7 +91,17 @@
       { name: "TikTok Pro", cost: 500, rate: 20, owned: 0, description: "A TikTok pro scrolling fast, pressing at 20x a second!" },
       { name: "Hyper Keyboard", cost: 6000, multiplier: 2, owned: 0, description: "Doubles your own hits!" },
       { name: "Broken Keyboard", cost: 7000, rate: 75, owned: 0, description: "A broken keyboard that spams spacebar at 75x per second!" },
-      { name: "Alien Gun", cost: 10000, rate: 150, owned: 0, description: "A girl made a gun, but it malfunctioned, striking the keyboard at 150x per second!" }
+      { name: "Alien Gun", cost: 10000, rate: 150, owned: 0, description: "A malfunctioning gun made by aliens that strikes the keyboard at 150x per second!" },
+      { name: "Auto Clicker", cost: 15000, rate: 500, owned: 0, description: "This clicker works faster than your grandma’s internet on dial-up (500x per second)." },
+      { name: "iPhone 29 Pro Max", cost: 50000, rate: 750, owned: 0, description: "The new iPhone 29 Pro Max – now with 750x clicks per second." },
+      { name: "Broken ChatGPT", cost: 100000, rate: 1000, owned: 0, description: "A malfunctioning ChatGPT that answers every question with 'Yes, but maybe not' (1000x per second)." },
+      { name: "Mad Scientist", cost: 150000, rate: 1500, owned: 0, description: "A mad scientist who clicks like a maniac (1500x per second)." },
+      { name: "Final World Lazsst 3", cost: 300000, rate: 2000, owned: 0, description: "The epic game nobody asked for but everyone’s been waiting for (2000x per second)." },
+      { name: "Spacebar Jammed", cost: 800000, rate: 2500, owned: 0, description: "Your spacebar is so jammed it’s clicking on its own (2500x per second)." },
+      { name: "Godmode Monkey", cost: 1500000, rate: 3000, owned: 0, description: "A monkey with god-like powers, pressing the spacebar at a divine speed (3000x per second)." },
+      { name: "Rich Boi", cost: 2000000, rate: 4500, owned: 0, description: "Now you’re rich. Click even faster (4500x per second)!" },
+      { name: "Last Call", cost: 10000000, rate: 20000, owned: 0, description: "This is your last chance to click before the universe resets (20000x per second)." },
+      { name: "Final Win", cost: 100000000, rate: 100000, owned: 0, description: "The ultimate upgrade. You win the game... forever (100000x per second)." }
     ];
 
     let count = 0;
@@ -105,7 +125,8 @@
 
       upgrades.sort((a, b) => a.cost - b.cost).forEach((upgrade, index) => {
         const upgradeElement = document.createElement("div");
-        upgradeElement.className = `upgrade ${count >= upgrade.cost ? 'available' : ''}`;
+        const availableClass = count >= upgrade.cost ? 'available' : '';
+        upgradeElement.className = `upgrade ${availableClass}`;
         upgradeElement.innerHTML = `
           <div>
             <span class="upgrade-info">${upgrade.name}</span>
@@ -119,6 +140,15 @@
         upgradeElement.onclick = () => buyUpgrade(index);
         upgradesContainer.appendChild(upgradeElement);
       });
+      
+      // Unlock all upgrades once "iPhone 29 Pro Max" is unlocked
+      if (count >= upgrades[7].cost) {
+        upgrades.forEach((upgrade, index) => {
+          if (index > 7) {
+            document.querySelectorAll('.upgrade')[index].classList.add('available');
+          }
+        });
+      }
     }
 
     function buyUpgrade(index) {
@@ -127,7 +157,7 @@
         count -= upgrade.cost;
         upgrade.owned++;
         upgrade.cost = Math.floor(upgrade.cost * 1.5);
-        
+
         if (upgrade.name === "Hyper Keyboard") {
           multiplier *= 2;
         }
